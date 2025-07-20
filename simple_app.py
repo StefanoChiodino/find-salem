@@ -151,12 +151,18 @@ def process_test_photos():
             for i, img_file in enumerate(salem_files[:10]):
                 with salem_cols[i % 5]:
                     try:
+                        # Debug: show file path
+                        if not img_file.exists():
+                            st.error(f"File not found: {img_file}")
+                            continue
+                        
                         img = Image.open(img_file)
                         st.image(img, width=100, caption=img_file.name)
                         if st.checkbox(f"Select", key=f"salem_{img_file.name}", label_visibility="collapsed"):
                             selected_files.append((img_file, "Salem"))
                     except Exception as e:
-                        st.error(f"Error loading {img_file.name}")
+                        st.error(f"Error loading {img_file.name}: {str(e)}")
+                        st.text(f"Path: {img_file}")
         else:
             st.info("No Salem test photos available")
     
@@ -174,12 +180,18 @@ def process_test_photos():
             for i, img_file in enumerate(other_files[:10]):
                 with other_cols[i % 5]:
                     try:
+                        # Debug: show file path
+                        if not img_file.exists():
+                            st.error(f"File not found: {img_file}")
+                            continue
+                        
                         img = Image.open(img_file)
                         st.image(img, width=100, caption=img_file.name)
                         if st.checkbox(f"Select", key=f"other_{img_file.name}", label_visibility="collapsed"):
                             selected_files.append((img_file, "Other Cat"))
                     except Exception as e:
-                        st.error(f"Error loading {img_file.name}")
+                        st.error(f"Error loading {img_file.name}: {str(e)}")
+                        st.text(f"Path: {img_file}")
         else:
             st.info("No other cat test photos available")
     
