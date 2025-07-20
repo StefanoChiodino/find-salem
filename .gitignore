@@ -84,6 +84,22 @@ data/test/salem/*
 data/test/other_cats/*
 !data/test/other_cats/.gitkeep
 
+# Data directories (photos excluded from git for size)
+data/
+!data/.gitkeep
+!data/train/
+!data/train/.gitkeep
+!data/test/
+!data/test/.gitkeep
+!data/train/salem/.gitkeep
+!data/train/other_cats/.gitkeep
+!data/test/salem/.gitkeep
+!data/test/other_cats/.gitkeep
+
+# Allow demo_samples for Streamlit Cloud deployment
+!demo_samples/
+!demo_samples/**
+
 # =============================================================================
 # MODEL FILES (now included in repository)
 # =============================================================================

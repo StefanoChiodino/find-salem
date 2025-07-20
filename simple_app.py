@@ -124,8 +124,11 @@ def process_test_photos():
     # Use original full resolution test images only
     salem_test_dir = Path("data/test/salem")
     other_test_dir = Path("data/test/other_cats")
+    # Fallback demo samples for Streamlit Cloud (since full dataset not deployed)
+    demo_salem_dir = Path("demo_samples/salem")
+    demo_other_dir = Path("demo_samples/other_cats")
     
-    if not salem_test_dir.exists() and not other_test_dir.exists():
+    if not salem_test_dir.exists() and not other_test_dir.exists() and not demo_salem_dir.exists() and not demo_other_dir.exists():
         st.warning("⚠️ No test directories found. Upload some photos first!")
         return
     
@@ -138,6 +141,12 @@ def process_test_photos():
         if salem_test_dir.exists():
             st.markdown("**🎯 Salem Test Photos**")
             salem_files = list(salem_test_dir.glob("*"))
+        elif demo_salem_dir.exists():
+            st.markdown("**🎯 Salem Demo Photos**")
+            salem_files = list(demo_salem_dir.glob("*"))
+        else:
+            salem_files = []
+        
         salem_files = [f for f in salem_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if salem_files:
             selected_salem = st.multiselect(
@@ -146,7 +155,11 @@ def process_test_photos():
                 key="salem_selection"
             )
             for file_name in selected_salem:
-                img_file = salem_test_dir / file_name
+                # Use the correct directory based on which one exists
+                if salem_test_dir.exists():
+                    img_file = salem_test_dir / file_name
+                else:
+                    img_file = demo_salem_dir / file_name
                 selected_files.append((img_file, "Salem"))
         else:
             st.info("No Salem test photos available")
@@ -155,6 +168,12 @@ def process_test_photos():
         if other_test_dir.exists():
             st.markdown("**🐾 Other Cat Test Photos**")
             other_files = list(other_test_dir.glob("*"))
+        elif demo_other_dir.exists():
+            st.markdown("**🐾 Other Cat Demo Photos**")
+            other_files = list(demo_other_dir.glob("*"))
+        else:
+            other_files = []
+        
         other_files = [f for f in other_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if other_files:
             selected_other = st.multiselect(
@@ -163,7 +182,11 @@ def process_test_photos():
                 key="other_selection"
             )
             for file_name in selected_other:
-                img_file = other_test_dir / file_name
+                # Use the correct directory based on which one exists
+                if other_test_dir.exists():
+                    img_file = other_test_dir / file_name
+                else:
+                    img_file = demo_other_dir / file_name
                 selected_files.append((img_file, "Other Cat"))
         else:
             st.info("No other cat test photos available")
