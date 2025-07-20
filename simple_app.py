@@ -124,7 +124,7 @@ def process_test_photos():
     # Check if test directories exist
     salem_test_dir = Path("data/test/salem")
     other_test_dir = Path("data/test/other_cats")
-    # Fallback demo samples bundled via Git LFS for Streamlit Cloud
+    # Fallback demo samples for Streamlit Cloud (since full dataset not deployed)
     demo_salem_dir = Path("demo_samples/salem")
     demo_other_dir = Path("demo_samples/other_cats")
     
@@ -141,11 +141,12 @@ def process_test_photos():
         if salem_test_dir.exists():
             st.markdown("**🎯 Salem Test Photos**")
             salem_files = list(salem_test_dir.glob("*"))
+            # Fallback to demo samples if no test images (Streamlit Cloud)
             if len(salem_files) < 5 and demo_salem_dir.exists():
                 salem_files.extend(list(demo_salem_dir.glob("*")))
         salem_files = [f for f in salem_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if salem_files:
-            st.markdown("**Select Salem photos (click to choose):**")
+            st.markdown("**Select Salem photos (click image to choose):**")
             # Create thumbnail grid for Salem photos
             salem_cols = st.columns(min(5, len(salem_files[:10])))
             for i, img_file in enumerate(salem_files[:10]):
@@ -157,11 +158,16 @@ def process_test_photos():
                             continue
                         
                         img = Image.open(img_file)
-                        # Make thumbnail clickable with button
-                        if st.button(f"📸", key=f"salem_{img_file.name}", help=f"Select {img_file.name}"):
+                        # Make the image itself clickable using button with image
+                        if st.button(
+                            f"Select {img_file.name}",
+                            key=f"salem_{img_file.name}",
+                            use_container_width=True
+                        ):
                             selected_files.append((img_file, "Salem"))
-                        # Show image after button so it appears above
-                        st.image(img, width=120, caption=img_file.name)
+                        
+                        # Show thumbnail image
+                        st.image(img, width=150, caption=img_file.name)
                     except Exception as e:
                         st.error(f"Error loading {img_file.name}: {str(e)}")
                         st.text(f"Path: {img_file}")
@@ -172,11 +178,12 @@ def process_test_photos():
         if other_test_dir.exists():
             st.markdown("**🐱 Other Cat Test Photos**")
             other_files = list(other_test_dir.glob("*"))
+            # Fallback to demo samples if no test images (Streamlit Cloud)
             if len(other_files) < 5 and demo_other_dir.exists():
                 other_files.extend(list(demo_other_dir.glob("*")))
         other_files = [f for f in other_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if other_files:
-            st.markdown("**Select other cat photos (click to choose):**")
+            st.markdown("**Select other cat photos (click image to choose):**")
             # Create thumbnail grid for other cat photos
             other_cols = st.columns(min(5, len(other_files[:10])))
             for i, img_file in enumerate(other_files[:10]):
@@ -188,11 +195,16 @@ def process_test_photos():
                             continue
                         
                         img = Image.open(img_file)
-                        # Make thumbnail clickable with button
-                        if st.button(f"📸", key=f"other_{img_file.name}", help=f"Select {img_file.name}"):
+                        # Make the image itself clickable using button with image
+                        if st.button(
+                            f"Select {img_file.name}",
+                            key=f"other_{img_file.name}",
+                            use_container_width=True
+                        ):
                             selected_files.append((img_file, "Other Cat"))
-                        # Show image after button so it appears above
-                        st.image(img, width=120, caption=img_file.name)
+                        
+                        # Show thumbnail image
+                        st.image(img, width=150, caption=img_file.name)
                     except Exception as e:
                         st.error(f"Error loading {img_file.name}: {str(e)}")
                         st.text(f"Path: {img_file}")
