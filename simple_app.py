@@ -145,14 +145,15 @@ def process_test_photos():
                 salem_files.extend(list(demo_salem_dir.glob("*")))
         salem_files = [f for f in salem_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if salem_files:
-            # Show first few files as options
-            salem_options = [f.name for f in salem_files[:10]]  # Show max 10 options
+            # Create a mapping from filename to full path
+            salem_file_map = {f.name: f for f in salem_files[:10]}
+            salem_options = list(salem_file_map.keys())
             selected_salem = st.multiselect(
                 "Select Salem photos:",
                 salem_options,
                 max_selections=5
             )
-            selected_files.extend([(salem_test_dir / name, "Salem") for name in selected_salem])
+            selected_files.extend([(salem_file_map[name], "Salem") for name in selected_salem])
         else:
             st.info("No Salem test photos available")
     
@@ -164,14 +165,15 @@ def process_test_photos():
                 other_files.extend(list(demo_other_dir.glob("*")))
         other_files = [f for f in other_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if other_files:
-            # Show first few files as options
-            other_options = [f.name for f in other_files[:10]]  # Show max 10 options
+            # Create a mapping from filename to full path
+            other_file_map = {f.name: f for f in other_files[:10]}
+            other_options = list(other_file_map.keys())
             selected_other = st.multiselect(
                 "Select other cat photos:",
                 other_options,
                 max_selections=5
             )
-            selected_files.extend([(other_test_dir / name, "Other Cat") for name in selected_other])
+            selected_files.extend([(other_file_map[name], "Other Cat") for name in selected_other])
         else:
             st.info("No other cat test photos available")
     
