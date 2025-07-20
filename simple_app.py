@@ -145,15 +145,18 @@ def process_test_photos():
                 salem_files.extend(list(demo_salem_dir.glob("*")))
         salem_files = [f for f in salem_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if salem_files:
-            # Create a mapping from filename to full path
-            salem_file_map = {f.name: f for f in salem_files[:10]}
-            salem_options = list(salem_file_map.keys())
-            selected_salem = st.multiselect(
-                "Select Salem photos:",
-                salem_options,
-                max_selections=5
-            )
-            selected_files.extend([(salem_file_map[name], "Salem") for name in selected_salem])
+            st.markdown("**Select Salem photos (click to choose):**")
+            # Create thumbnail grid for Salem photos
+            salem_cols = st.columns(min(5, len(salem_files[:10])))
+            for i, img_file in enumerate(salem_files[:10]):
+                with salem_cols[i % 5]:
+                    try:
+                        img = Image.open(img_file)
+                        st.image(img, width=100, caption=img_file.name)
+                        if st.checkbox(f"Select", key=f"salem_{img_file.name}", label_visibility="collapsed"):
+                            selected_files.append((img_file, "Salem"))
+                    except Exception as e:
+                        st.error(f"Error loading {img_file.name}")
         else:
             st.info("No Salem test photos available")
     
@@ -165,15 +168,18 @@ def process_test_photos():
                 other_files.extend(list(demo_other_dir.glob("*")))
         other_files = [f for f in other_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if other_files:
-            # Create a mapping from filename to full path
-            other_file_map = {f.name: f for f in other_files[:10]}
-            other_options = list(other_file_map.keys())
-            selected_other = st.multiselect(
-                "Select other cat photos:",
-                other_options,
-                max_selections=5
-            )
-            selected_files.extend([(other_file_map[name], "Other Cat") for name in selected_other])
+            st.markdown("**Select other cat photos (click to choose):**")
+            # Create thumbnail grid for other cat photos
+            other_cols = st.columns(min(5, len(other_files[:10])))
+            for i, img_file in enumerate(other_files[:10]):
+                with other_cols[i % 5]:
+                    try:
+                        img = Image.open(img_file)
+                        st.image(img, width=100, caption=img_file.name)
+                        if st.checkbox(f"Select", key=f"other_{img_file.name}", label_visibility="collapsed"):
+                            selected_files.append((img_file, "Other Cat"))
+                    except Exception as e:
+                        st.error(f"Error loading {img_file.name}")
         else:
             st.info("No other cat test photos available")
     
