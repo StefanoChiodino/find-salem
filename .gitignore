@@ -254,13 +254,10 @@ cython_debug/
 
 # Project-specific exclusions
 # Photo datasets (too large for git)
-data/train/
-data/test/
-
-# Model files (too large for git)
-models/*.pkl
-models/*.joblib
-models/*.model
+data/train/other_cats/*
+data/train/salem/*
+data/test/other_cats/*
+data/test/salem/*
 
 # Deployment archives
 *.tar.gz

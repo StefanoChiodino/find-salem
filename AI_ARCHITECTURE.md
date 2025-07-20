@@ -2,17 +2,19 @@
 
 ## 🎯 Project Overview
 
-Salem is a computer vision AI system designed to identify a specific black cat (Salem) among other black cats. The system uses machine learning to distinguish Salem's unique visual features from other similar-looking cats.
+Find Salem is a computer vision AI system designed to identify a specific black cat (Salem) among other black cats. The system uses machine learning to distinguish Salem's unique visual features from other similar-looking cats.
 
 ## 🧠 AI Architecture
 
 ### Model Type: Random Forest Classifier
+
 - **Algorithm**: Scikit-learn Random Forest with 200 decision trees
 - **Image Resolution**: 128x128 pixels (optimized for feature extraction)
 - **Feature Extraction**: Flattened RGB pixel values (49,152 features per image)
 - **Performance**: 90.9% test accuracy, 82.6% validation accuracy
 
 ### Why Random Forest?
+
 1. **Robust Performance**: Excellent for image classification with tabular features
 2. **Fast Training**: Completes in under 1 second
 3. **No GPU Required**: Works on any machine with Python
@@ -22,6 +24,7 @@ Salem is a computer vision AI system designed to identify a specific black cat (
 ## 📊 Dataset Architecture
 
 ### Data Structure
+
 ```
 data/
 ├── train/                    # Training dataset (80%)
@@ -33,6 +36,7 @@ data/
 ```
 
 ### Dataset Characteristics
+
 - **Total Images**: ~474 photos
 - **Balance**: Well-balanced dataset (Salem: 228, Other cats: 246)
 - **Split**: 80% training, 20% testing
