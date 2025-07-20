@@ -157,9 +157,11 @@ def process_test_photos():
                             continue
                         
                         img = Image.open(img_file)
-                        st.image(img, width=100, caption=img_file.name)
-                        if st.checkbox(f"Select", key=f"salem_{img_file.name}", label_visibility="collapsed"):
+                        # Make thumbnail clickable with button
+                        if st.button(f"📸", key=f"salem_{img_file.name}", help=f"Select {img_file.name}"):
                             selected_files.append((img_file, "Salem"))
+                        # Show image after button so it appears above
+                        st.image(img, width=120, caption=img_file.name)
                     except Exception as e:
                         st.error(f"Error loading {img_file.name}: {str(e)}")
                         st.text(f"Path: {img_file}")
@@ -186,9 +188,11 @@ def process_test_photos():
                             continue
                         
                         img = Image.open(img_file)
-                        st.image(img, width=100, caption=img_file.name)
-                        if st.checkbox(f"Select", key=f"other_{img_file.name}", label_visibility="collapsed"):
+                        # Make thumbnail clickable with button
+                        if st.button(f"📸", key=f"other_{img_file.name}", help=f"Select {img_file.name}"):
                             selected_files.append((img_file, "Other Cat"))
+                        # Show image after button so it appears above
+                        st.image(img, width=120, caption=img_file.name)
                     except Exception as e:
                         st.error(f"Error loading {img_file.name}: {str(e)}")
                         st.text(f"Path: {img_file}")
