@@ -15,7 +15,7 @@ import io
 
 
 class ModernImageCollector:
-    """Modern image collector using requests and PIL libraries."""
+    """Modern image collector using requests and PIL libraries with duplicate detection."""
     
     def __init__(self, output_dir="data/train/other_cats"):
         self.output_dir = Path(output_dir)
@@ -26,101 +26,170 @@ class ModernImageCollector:
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         })
+        
+        # Duplicate detection - NEVER touches Salem photos
+        self.file_hashes = set()
+        self.downloaded_urls = set() 
+        print("⚠️  SAFETY: This collector NEVER touches Salem photos!")
+        self._load_existing_hashes()
+    
+    def _load_existing_hashes(self):
+        """Load existing image hashes for duplicate detection"""
+        print("🔍 Loading existing other cat image hashes...")
+        
+        # Only check other_cats directories - NEVER salem folders
+        for data_path in ["data/train/other_cats", "data/test/other_cats", "demo_samples/other_cats"]:
+            data_dir = Path(data_path)
+            if data_dir.exists():
+                for img_file in data_dir.glob("*.jpg"):
+                    if self._is_valid_image(img_file):
+                        file_hash = self._get_file_hash(img_file)
+                        if file_hash:
+                            self.file_hashes.add(file_hash)
+        
+        print(f"✅ Loaded {len(self.file_hashes)} existing image hashes")
+    
+    def _get_file_hash(self, file_path):
+        """Get MD5 hash for duplicate detection"""
+        try:
+            import hashlib
+            with open(file_path, 'rb') as f:
+                return hashlib.md5(f.read()).hexdigest()
+        except Exception:
+            return None
+    
+    def _is_valid_image(self, file_path):
+        """Check if file is a valid image"""
+        try:
+            with Image.open(file_path) as img:
+                img.verify()
+                return True
+        except Exception:
+            return False
     
     def download_image(self, url, filename):
-        """Download image using urllib."""
+        """Download image with duplicate detection and validation"""
+        # Skip if we've tried this URL before
+        if url in self.downloaded_urls:
+            return False
+        
+        self.downloaded_urls.add(url)
+        
+        temp_path = self.output_dir / f"temp_{filename}"
+        final_path = self.output_dir / filename
+        
         try:
-            # Create request with headers
-            req = urllib.request.Request(url, headers=self.headers)
+            # Download using requests session
+            response = self.session.get(url, timeout=15, stream=True)
             
-            with urllib.request.urlopen(req, timeout=15) as response:
-                if response.status != 200:
-                    print(f"❌ Failed to download {filename}: HTTP {response.status}")
-                    return False
-                
-                # Check content type
-                content_type = response.headers.get('Content-Type', '')
-                if not content_type.startswith('image/'):
-                    print(f"⚠️ Not an image: {filename} ({content_type})")
-                    return False
-                
-                # Read and save image data
-                image_data = response.read()
-                
-                # Check minimum size
-                if len(image_data) < 1000:
-                    print(f"⚠️ Image too small: {filename}")
-                    return False
-                
-                # Save to file
-                filepath = self.output_dir / filename
-                with open(filepath, 'wb') as f:
-                    f.write(image_data)
-                
-                print(f"✅ Downloaded: {filename} ({len(image_data)} bytes)")
-                return True
-                
+            if response.status_code != 200:
+                print(f"❌ Failed to download {filename}: HTTP {response.status_code}")
+                return False
+            
+            # Check content type
+            content_type = response.headers.get('Content-Type', '')
+            if not content_type.startswith('image/'):
+                print(f"⚠️ Not an image: {filename} ({content_type})")
+                return False
+            
+            # Download to temp file
+            with open(temp_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            
+            # Check minimum size
+            if temp_path.stat().st_size < 1000:
+                temp_path.unlink()
+                print(f"⚠️ Image too small: {filename}")
+                return False
+            
+            # Validate image
+            if not self._is_valid_image(temp_path):
+                temp_path.unlink()
+                print(f"⚠️ Invalid image: {filename}")
+                return False
+            
+            # Check for duplicates using file hash
+            file_hash = self._get_file_hash(temp_path)
+            if not file_hash:
+                temp_path.unlink()
+                print(f"⚠️ Could not hash: {filename}")
+                return False
+            
+            if file_hash in self.file_hashes:
+                temp_path.unlink()
+                print(f"🗑️ Duplicate image: {filename}")
+                return False
+            
+            # All checks passed - move to final location
+            temp_path.rename(final_path)
+            self.file_hashes.add(file_hash)
+            
+            print(f"✅ Downloaded: {filename} ({final_path.stat().st_size} bytes)")
+            return True
+            
         except Exception as e:
+            if temp_path.exists():
+                temp_path.unlink()
             print(f"❌ Error downloading {filename}: {e}")
             return False
     
     def search_unsplash(self, query, count=20):
-        """Search Unsplash for images."""
+        """Search Unsplash for images using requests session."""
         print(f"🔍 Searching Unsplash for '{query}'...")
         
         try:
+            from urllib.parse import quote
             # Unsplash search URL
-            search_url = f"https://unsplash.com/napi/search/photos?query={urllib.parse.quote(query)}&per_page={count}"
+            search_url = f"https://unsplash.com/napi/search/photos?query={quote(query)}&per_page={count}"
             
-            req = urllib.request.Request(search_url, headers=self.headers)
-            with urllib.request.urlopen(req, timeout=10) as response:
-                if response.status != 200:
-                    print(f"❌ Unsplash search failed: HTTP {response.status}")
-                    return []
-                
-                data = json.loads(response.read().decode())
-                results = data.get('results', [])
-                
-                image_urls = []
-                for photo in results:
-                    img_url = photo.get('urls', {}).get('regular')
-                    if img_url:
-                        image_urls.append(img_url)
-                
-                print(f"📋 Found {len(image_urls)} Unsplash images")
-                return image_urls
-                
+            response = self.session.get(search_url, timeout=10)
+            if response.status_code != 200:
+                print(f"❌ Unsplash search failed: HTTP {response.status_code}")
+                return []
+            
+            data = response.json()
+            results = data.get('results', [])
+            
+            image_urls = []
+            for photo in results:
+                img_url = photo.get('urls', {}).get('regular')
+                if img_url and img_url not in self.downloaded_urls:
+                    image_urls.append(img_url)
+            
+            print(f"📋 Found {len(image_urls)} new Unsplash images")
+            return image_urls
+            
         except Exception as e:
             print(f"❌ Unsplash search error: {e}")
             return []
     
     def search_pixabay(self, query, count=20):
-        """Search Pixabay for images (no API key needed for basic search)."""
+        """Search Pixabay for images using requests session."""
         print(f"🔍 Searching Pixabay for '{query}'...")
         
         try:
-            # Pixabay search URL (using their public endpoint)
-            search_url = f"https://pixabay.com/api/?key=9656065-a4094594c34f9ac14c7fc4c39&q={urllib.parse.quote(query)}&image_type=photo&per_page={count}&safesearch=true"
+            from urllib.parse import quote
+            # Pixabay search URL (using demo API key - get your own for production)
+            search_url = f"https://pixabay.com/api/?key=9656065-a4094594c34f9ac14c7fc4c39&q={quote(query)}&image_type=photo&per_page={count}&safesearch=true&category=animals"
             
-            # Note: This uses a demo API key - in production you'd want your own
-            req = urllib.request.Request(search_url, headers=self.headers)
-            with urllib.request.urlopen(req, timeout=10) as response:
-                if response.status != 200:
-                    print(f"❌ Pixabay search failed: HTTP {response.status}")
-                    return []
-                
-                data = json.loads(response.read().decode())
-                hits = data.get('hits', [])
-                
-                image_urls = []
-                for hit in hits:
-                    img_url = hit.get('webformatURL')
-                    if img_url:
-                        image_urls.append(img_url)
-                
-                print(f"📋 Found {len(image_urls)} Pixabay images")
-                return image_urls
-                
+            response = self.session.get(search_url, timeout=10)
+            if response.status_code != 200:
+                print(f"❌ Pixabay search failed: HTTP {response.status_code}")
+                return []
+            
+            data = response.json()
+            hits = data.get('hits', [])
+            
+            image_urls = []
+            for hit in hits:
+                img_url = hit.get('webformatURL')
+                if img_url and img_url not in self.downloaded_urls:
+                    image_urls.append(img_url)
+            
+            print(f"📋 Found {len(image_urls)} new Pixabay images")
+            return image_urls
+            
         except Exception as e:
             print(f"❌ Pixabay search error: {e}")
             return []
@@ -141,12 +210,9 @@ class ModernImageCollector:
         
         all_urls = []
         
-        # Search terms for black cats
+        # Search terms for black cats - maximum focus on quality
         search_terms = [
-            "black cat",
-            "black kitten", 
-            "black domestic cat",
-            "dark cat"
+            "black cat"  # Only use the most specific term
         ]
         
         # Try Unsplash first
@@ -210,7 +276,7 @@ def collect_for_training_and_test():
     
     # Collect training images
     print(f"\n📚 Collecting {train_needed} images for training set...")
-    train_collector = SimpleImageCollector("data/train/other_cats")
+    train_collector = ModernImageCollector("data/train/other_cats")
     train_collected = train_collector.collect_images(train_needed)
     
     print(f"\n⏱️ Waiting 30 seconds before collecting test images...")
@@ -218,7 +284,7 @@ def collect_for_training_and_test():
     
     # Collect test images
     print(f"\n🧪 Collecting {test_needed} images for test set...")
-    test_collector = SimpleImageCollector("data/test/other_cats")
+    test_collector = ModernImageCollector("data/test/other_cats")
     test_collected = test_collector.collect_images(test_needed)
     
     # Summary
