@@ -28,15 +28,13 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    # Move main title to sidebar to save space
-    st.sidebar.title("🐱 Find Salem")
-    st.sidebar.markdown("**Black Cat Identifier**")
+    # Move main title to sidebar navigation
+    st.sidebar.title("🐱 Find Salem - Black Cat Identifier")
     st.sidebar.markdown("---")
     
-    # Sidebar navigation
-    st.sidebar.subheader("🧭 Navigation")
+    # Sidebar navigation (simplified)
     page = st.sidebar.selectbox(
-        "Choose a page:",
+        "Navigate to:",
         ["🔍 Predict Salem", "ℹ️ Model Info", "📁 Manage Data"]
     )
     
@@ -123,8 +121,6 @@ def process_uploaded_files(uploaded_files):
 
 def process_test_photos():
     """Allow users to select and test photos from the test dataset"""
-    st.subheader("🎯 Try Sample Photos from Test Dataset")
-    
     # Check if test directories exist
     salem_test_dir = Path("data/test/salem")
     other_test_dir = Path("data/test/other_cats")
