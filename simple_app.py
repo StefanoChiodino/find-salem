@@ -121,12 +121,9 @@ def process_uploaded_files(uploaded_files):
 
 def process_test_photos():
     """Allow users to select and test photos from the test dataset"""
-    # Check if test directories exist
+    # Use original full resolution test images only
     salem_test_dir = Path("data/test/salem")
     other_test_dir = Path("data/test/other_cats")
-    # Fallback demo samples for Streamlit Cloud (since full dataset not deployed)
-    demo_salem_dir = Path("demo_samples/salem")
-    demo_other_dir = Path("demo_samples/other_cats")
     
     if not salem_test_dir.exists() and not other_test_dir.exists():
         st.warning("⚠️ No test directories found. Upload some photos first!")
@@ -141,73 +138,33 @@ def process_test_photos():
         if salem_test_dir.exists():
             st.markdown("**🎯 Salem Test Photos**")
             salem_files = list(salem_test_dir.glob("*"))
-            # Fallback to demo samples if no test images (Streamlit Cloud)
-            if len(salem_files) < 5 and demo_salem_dir.exists():
-                salem_files.extend(list(demo_salem_dir.glob("*")))
         salem_files = [f for f in salem_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if salem_files:
-            st.markdown("**Select Salem photos (click image to choose):**")
-            # Create thumbnail grid for Salem photos
-            salem_cols = st.columns(min(5, len(salem_files[:10])))
-            for i, img_file in enumerate(salem_files[:10]):
-                with salem_cols[i % 5]:
-                    try:
-                        # Debug: show file path
-                        if not img_file.exists():
-                            st.error(f"File not found: {img_file}")
-                            continue
-                        
-                        img = Image.open(img_file)
-                        # Make the image itself clickable using button with image
-                        if st.button(
-                            f"Select {img_file.name}",
-                            key=f"salem_{img_file.name}",
-                            use_container_width=True
-                        ):
-                            selected_files.append((img_file, "Salem"))
-                        
-                        # Show thumbnail image
-                        st.image(img, width=150, caption=img_file.name)
-                    except Exception as e:
-                        st.error(f"Error loading {img_file.name}: {str(e)}")
-                        st.text(f"Path: {img_file}")
+            selected_salem = st.multiselect(
+                "Select Salem photos:",
+                options=[f.name for f in salem_files],
+                key="salem_selection"
+            )
+            for file_name in selected_salem:
+                img_file = salem_test_dir / file_name
+                selected_files.append((img_file, "Salem"))
         else:
             st.info("No Salem test photos available")
     
     with col2:
         if other_test_dir.exists():
-            st.markdown("**🐱 Other Cat Test Photos**")
+            st.markdown("**🐾 Other Cat Test Photos**")
             other_files = list(other_test_dir.glob("*"))
-            # Fallback to demo samples if no test images (Streamlit Cloud)
-            if len(other_files) < 5 and demo_other_dir.exists():
-                other_files.extend(list(demo_other_dir.glob("*")))
         other_files = [f for f in other_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
         if other_files:
-            st.markdown("**Select other cat photos (click image to choose):**")
-            # Create thumbnail grid for other cat photos
-            other_cols = st.columns(min(5, len(other_files[:10])))
-            for i, img_file in enumerate(other_files[:10]):
-                with other_cols[i % 5]:
-                    try:
-                        # Debug: show file path
-                        if not img_file.exists():
-                            st.error(f"File not found: {img_file}")
-                            continue
-                        
-                        img = Image.open(img_file)
-                        # Make the image itself clickable using button with image
-                        if st.button(
-                            f"Select {img_file.name}",
-                            key=f"other_{img_file.name}",
-                            use_container_width=True
-                        ):
-                            selected_files.append((img_file, "Other Cat"))
-                        
-                        # Show thumbnail image
-                        st.image(img, width=150, caption=img_file.name)
-                    except Exception as e:
-                        st.error(f"Error loading {img_file.name}: {str(e)}")
-                        st.text(f"Path: {img_file}")
+            selected_other = st.multiselect(
+                "Select other cat photos:",
+                options=[f.name for f in other_files],
+                key="other_selection"
+            )
+            for file_name in selected_other:
+                img_file = other_test_dir / file_name
+                selected_files.append((img_file, "Other Cat"))
         else:
             st.info("No other cat test photos available")
     
