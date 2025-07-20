@@ -1,55 +1,9 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+# Find Salem - Black Cat Identifier
+# Consolidated .gitignore for clean repository structure
 
-# Virtual environments
-venv/
-env/
-ENV/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# PyTorch models
-*.pth
-*.pt
-
-# Data files (we'll track structure but not actual images)
-data/train/salem/*.jpg
-data/train/salem/*.png
-data/train/other_cats/*.jpg
-data/train/other_cats/*.png
-data/test/salem/*.jpg
-data/test/salem/*.png
-data/test/other_cats/*.jpg
-data/test/other_cats/*.png
-
-# IDE
-.vscode/
-.idea/
-
-# macOS
-.DS_Store
-
+# =============================================================================
+# PYTHON FILES
+# =============================================================================
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -79,8 +33,6 @@ share/python-wheels/
 MANIFEST
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -98,6 +50,96 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# =============================================================================
+# ENVIRONMENTS
+# =============================================================================
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# =============================================================================
+# DATA DIRECTORIES (images excluded, structure preserved with .gitkeep)
+# =============================================================================
+# Training data - Salem photos
+data/train/salem/*
+!data/train/salem/.gitkeep
+
+# Training data - Other cat photos
+data/train/other_cats/*
+!data/train/other_cats/.gitkeep
+
+# Test data - Salem photos
+data/test/salem/*
+!data/test/salem/.gitkeep
+
+# Test data - Other cat photos
+data/test/other_cats/*
+!data/test/other_cats/.gitkeep
+
+# =============================================================================
+# MODEL FILES (now included in repository)
+# =============================================================================
+# Note: Model files are now tracked in git for easy deployment
+# models/*.pkl - INCLUDED in repository
+
+# =============================================================================
+# DEPLOYMENT FILES
+# =============================================================================
+# Deployment archives
+*.tar.gz
+*.zip
+salem-deploy.*
+
+# =============================================================================
+# DEVELOPMENT TOOLS
+# =============================================================================
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# =============================================================================
+# SYSTEM FILES
+# =============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# =============================================================================
+# TEMPORARY FILES
+# =============================================================================
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
 *.py,cover
 .hypothesis/
 .pytest_cache/

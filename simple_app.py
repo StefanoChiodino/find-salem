@@ -248,26 +248,39 @@ def model_info_page():
         
         st.subheader("📊 Dataset Information")
         
-        # Check if data directories exist
+        # Check if data directories exist and contain actual image files
         train_salem_dir = Path("data/train/salem")
         test_salem_dir = Path("data/test/salem")
         train_other_dir = Path("data/train/other_cats")
         test_other_dir = Path("data/test/other_cats")
         
-        if not any([train_salem_dir.exists(), test_salem_dir.exists(), train_other_dir.exists(), test_other_dir.exists()]):
-            st.info("📁 **Dataset Information**")
-            st.write("**Training Dataset:** ~342 images (182 Salem + 160 other cats)")
-            st.write("**Test Dataset:** ~132 images (46 Salem + 86 other cats)")
-            st.write("**Total Images:** ~474 images")
+        # Count actual image files in each directory
+        salem_train = 0
+        salem_test = 0
+        other_train = 0
+        other_test = 0
+        
+        if train_salem_dir.exists():
+            salem_train = len([f for f in train_salem_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']])
+        if test_salem_dir.exists():
+            salem_test = len([f for f in test_salem_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']])
+        if train_other_dir.exists():
+            other_train = len([f for f in train_other_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png']])
+        if test_other_dir.exists():
+            other_test = len([f for f in test_other_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png']])
+        
+        total_images = salem_train + salem_test + other_train + other_test
+        
+        # If no actual image files found, show static dataset information
+        if total_images < 10:  # Less than 10 images means likely empty deployment
+            st.info("📁 **Dataset Information (Training Dataset)**")
+            st.write("**Training Dataset:** 342 images (182 Salem + 160 other cats)")
+            st.write("**Test Dataset:** 132 images (46 Salem + 86 other cats)")
+            st.write("**Total Images:** 474 images")
             st.success("✅ Dataset is well balanced!")
-            st.info("💡 Data directories not available on this deployment (model trained locally)")
+            st.info("💡 Image files not deployed to this server (model trained locally with full dataset)")
         else:
-            # Count current dataset if directories exist
-            salem_train = len([f for f in train_salem_dir.glob("*") if f.is_file() and not f.name.startswith('.')]) if train_salem_dir.exists() else 0
-            salem_test = len([f for f in test_salem_dir.glob("*") if f.is_file() and not f.name.startswith('.')]) if test_salem_dir.exists() else 0
-            other_train = len([f for f in train_other_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png']]) if train_other_dir.exists() else 0
-            other_test = len([f for f in test_other_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png']]) if test_other_dir.exists() else 0
-            
+            # Show actual counts if images are present
             col1, col2 = st.columns(2)
             with col1:
                 st.metric("Salem Training", salem_train)
@@ -276,9 +289,10 @@ def model_info_page():
                 st.metric("Other Cats Training", other_train)
                 st.metric("Other Cats Test", other_test)
             
+            st.metric("Total Images", total_images)
+            
             total_salem = salem_train + salem_test
             total_other = other_train + other_test
-            st.metric("Total Images", total_salem + total_other)
             
             if abs(total_salem - total_other) <= 10:
                 st.success("✅ Dataset is well balanced!")

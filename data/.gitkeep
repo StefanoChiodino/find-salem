@@ -1,0 +1,12 @@
+# This file ensures the data directory structure is preserved in git
+# 
+# Directory structure:
+# data/
+# ├── train/
+# │   ├── salem/          (Salem training photos - excluded from git)
+# │   └── other_cats/     (Other cat training photos - excluded from git)
+# └── test/
+#     ├── salem/          (Salem test photos - excluded from git)
+#     └── other_cats/     (Other cat test photos - excluded from git)
+#
+# Photos are excluded from git but directory structure is maintained

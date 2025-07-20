@@ -1,30 +1,31 @@
 #!/usr/bin/env python3
 """
-Standalone black cat image collector using built-in libraries only.
-Works without external dependencies like requests or PIL.
+Modern black cat image collector using requests library.
+Requires: pip install requests pillow
 """
 
-import urllib.request
-import urllib.parse
+import requests
 import json
-import re
 import time
 import os
 from pathlib import Path
 import random
+from PIL import Image
+import io
 
 
-class SimpleImageCollector:
-    """Simple image collector using only built-in Python libraries."""
+class ModernImageCollector:
+    """Modern image collector using requests and PIL libraries."""
     
     def __init__(self, output_dir="data/train/other_cats"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Set up user agent
-        self.headers = {
+        # Set up session with headers
+        self.session = requests.Session()
+        self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
+        })
     
     def download_image(self, url, filename):
         """Download image using urllib."""

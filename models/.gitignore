@@ -1,5 +1,0 @@
-# Ignore model files (they're too large for git)
-*.pkl
-*.joblib
-*.model
-!.gitignore

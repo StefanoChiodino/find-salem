@@ -82,13 +82,6 @@ Make sure your devbox allows:
 - Python 3.8+ installed
 - Internet access for pip installs
 
-## 🔍 Common Devbox Addresses to Try
-
-- `devbox`
-- `dev.local` 
-- `YOUR_USERNAME-devbox`
-- IP addresses in your local network (192.168.x.x or 10.0.x.x)
-
 ## ✅ Verification
 
 Once deployed, you should see:

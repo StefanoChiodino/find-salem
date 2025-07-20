@@ -114,6 +114,17 @@ class SimpleSalemClassifier:
         print(f"📊 Training set: {len(X_train)} images")
         print(f"📊 Validation set: {len(X_val)} images")
         
+        # Estimate training time based on model type and data size
+        if model_type == "random_forest":
+            estimated_time = len(X_train) * 0.001  # ~1ms per image for RF
+            print(f"⏱️ Estimated training time: {estimated_time:.1f} seconds")
+        elif model_type == "gradient_boosting":
+            estimated_time = len(X_train) * 1.2  # ~1.2s per image for GB
+            print(f"⏱️ Estimated training time: {estimated_time:.0f} seconds")
+        elif model_type == "svm":
+            estimated_time = len(X_train) * 0.01  # ~10ms per image for SVM
+            print(f"⏱️ Estimated training time: {estimated_time:.1f} seconds")
+        
         # Choose model
         if model_type == "random_forest":
             self.model = RandomForestClassifier(
