@@ -124,6 +124,9 @@ def process_test_photos():
     # Check if test directories exist
     salem_test_dir = Path("data/test/salem")
     other_test_dir = Path("data/test/other_cats")
+    # Fallback demo samples bundled via Git LFS for Streamlit Cloud
+    demo_salem_dir = Path("demo_samples/salem")
+    demo_other_dir = Path("demo_samples/other_cats")
     
     if not salem_test_dir.exists() and not other_test_dir.exists():
         st.warning("⚠️ No test directories found. Upload some photos first!")
@@ -137,28 +140,40 @@ def process_test_photos():
     with col1:
         if salem_test_dir.exists():
             st.markdown("**🎯 Salem Test Photos**")
-            salem_files = [f for f in salem_test_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
-            if salem_files:
-                # Show first few files as options
-                salem_options = [f.name for f in salem_files[:10]]  # Show max 10 options
-                selected_salem = st.multiselect(
-                    "Select Salem photos:",
-                    salem_options,
-                    max_selections=5
-                )
-                selected_files.extend([(salem_test_dir / name, "Salem") for name in selected_salem])
-            else:
-                st.info("No Salem test photos available")
+            salem_files = list(salem_test_dir.glob("*"))
+            if len(salem_files) < 5 and demo_salem_dir.exists():
+                salem_files.extend(list(demo_salem_dir.glob("*")))
+        salem_files = [f for f in salem_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
+        if salem_files:
+            # Show first few files as options
+            salem_options = [f.name for f in salem_files[:10]]  # Show max 10 options
+            selected_salem = st.multiselect(
+                "Select Salem photos:",
+                salem_options,
+                max_selections=5
+            )
+            selected_files.extend([(salem_test_dir / name, "Salem") for name in selected_salem])
+        else:
+            st.info("No Salem test photos available")
     
     with col2:
         if other_test_dir.exists():
             st.markdown("**🐱 Other Cat Test Photos**")
-            other_files = [f for f in other_test_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
-            if other_files:
-                # Show first few files as options
-                other_options = [f.name for f in other_files[:10]]  # Show max 10 options
-                selected_other = st.multiselect(
-                    "Select other cat photos:",
+            other_files = list(other_test_dir.glob("*"))
+            if len(other_files) < 5 and demo_other_dir.exists():
+                other_files.extend(list(demo_other_dir.glob("*")))
+        other_files = [f for f in other_files if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.heic']]
+        if other_files:
+            # Show first few files as options
+            other_options = [f.name for f in other_files[:10]]  # Show max 10 options
+            selected_other = st.multiselect(
+                "Select other cat photos:",
+                other_options,
+                max_selections=5
+            )
+            selected_files.extend([(other_test_dir / name, "Other Cat") for name in selected_other])
+        else:
+            st.info("No other cat test photos available")
                     other_options,
                     max_selections=5
                 )
