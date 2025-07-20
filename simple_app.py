@@ -174,12 +174,6 @@ def process_test_photos():
             selected_files.extend([(other_test_dir / name, "Other Cat") for name in selected_other])
         else:
             st.info("No other cat test photos available")
-                    other_options,
-                    max_selections=5
-                )
-                selected_files.extend([(other_test_dir / name, "Other Cat") for name in selected_other])
-            else:
-                st.info("No other cat test photos available")
     
     # Process selected files
     if selected_files:
