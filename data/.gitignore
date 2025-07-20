@@ -1,0 +1,4 @@
+# Ignore all photo files and directories
+*
+!.gitignore
+!README.md
