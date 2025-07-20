@@ -12,30 +12,16 @@ echo "🚀 Deploying Salem Cat Identifier to devbox..."
 PROJECT_NAME="find-salem"
 USERNAME=$(whoami)
 
-# Check if devbox address is provided as argument
-if [ $# -ge 1 ]; then
-    DEVBOX_HOST="$1"
-    echo "🎯 Using provided devbox address: $DEVBOX_HOST"
-else
-    # Common devbox addresses to try
-    DEVBOX_ADDRESSES=(
-        "dev27-uswest1adevc"  # Known working address
-        "devbox"
-        "dev"
-        "dev.local"
-        "devbox.local" 
-        "${USERNAME}-devbox"
-        "${USERNAME}-dev"
-        "dev-${USERNAME}"
-        "devbox-${USERNAME}"
-        "dev27-uswest1adevc.local"
-        "192.168.1.100"
-        "192.168.1.10"
-        "10.0.0.100"
-        "10.0.0.10"
-    )
-    DEVBOX_HOST=""
+# Require devbox address as parameter
+if [ $# -lt 1 ]; then
+    echo "❌ Error: Devbox address is required"
+    echo "Usage: ./deploy.sh <devbox-address> [remote-path]"
+    echo "Example: ./deploy.sh dev27-uswest1adevc web"
+    exit 1
 fi
+
+DEVBOX_HOST="$1"
+echo "🎯 Using devbox address: $DEVBOX_HOST"
 
 # Set remote path (can be overridden by second argument)
 if [ $# -ge 2 ]; then
@@ -44,38 +30,17 @@ else
     REMOTE_PATH="web"  # Default to web directory
 fi
 
-# Function to test SSH connection
-test_ssh() {
-    local host=$1
-    echo "Testing connection to $host..."
-    if ssh -o ConnectTimeout=5 -o BatchMode=yes "$host" exit 2>/dev/null; then
-        echo "✅ Connected to $host"
-        return 0
-    else
-        echo "❌ Cannot connect to $host"
-        return 1
-    fi
-}
-
-# Find working devbox address (only if not provided as argument)
-if [ -z "$DEVBOX_HOST" ]; then
-    echo "🔍 Searching for accessible devbox..."
-    for addr in "${DEVBOX_ADDRESSES[@]}"; do
-        if test_ssh "$addr"; then
-            DEVBOX_HOST="$addr"
-            break
-        fi
-    done
-    
-    if [ -z "$DEVBOX_HOST" ]; then
-        echo "❌ Could not find accessible devbox. Please specify the address manually:"
-        echo "Usage: ./deploy.sh <devbox-address> [remote-path]"
-        echo "Example: ./deploy.sh dev27-uswest1adevc web"
-        exit 1
-    fi
-    
-    echo "🎯 Found devbox: $DEVBOX_HOST"
+# Test SSH connection to devbox
+echo "Testing connection to $DEVBOX_HOST..."
+if ! ssh -o ConnectTimeout=5 -o BatchMode=yes "$DEVBOX_HOST" exit 2>/dev/null; then
+    echo "❌ Cannot connect to $DEVBOX_HOST"
+    echo "Please check:"
+    echo "  - Devbox address is correct"
+    echo "  - SSH key is configured"
+    echo "  - Devbox is accessible"
+    exit 1
 fi
+echo "✅ Connected to $DEVBOX_HOST"
 
 # Create deployment package
 echo "📦 Creating deployment package..."

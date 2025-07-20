@@ -142,7 +142,7 @@ def process_test_photos():
                 # Show first few files as options
                 salem_options = [f.name for f in salem_files[:10]]  # Show max 10 options
                 selected_salem = st.multiselect(
-                    f"Select Salem photos ({len(salem_files)} available):",
+                    "Select Salem photos:",
                     salem_options,
                     max_selections=5
                 )
@@ -158,7 +158,7 @@ def process_test_photos():
                 # Show first few files as options
                 other_options = [f.name for f in other_files[:10]]  # Show max 10 options
                 selected_other = st.multiselect(
-                    f"Select other cat photos ({len(other_files)} available):",
+                    "Select other cat photos:",
                     other_options,
                     max_selections=5
                 )
