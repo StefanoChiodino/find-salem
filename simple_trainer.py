@@ -21,7 +21,7 @@ from typing import Tuple, List
 class SimpleSalemClassifier:
     """Simple image classifier using scikit-learn."""
     
-    def __init__(self, img_size=(64, 64)):
+    def __init__(self, img_size=(128, 128)):
         self.img_size = img_size
         self.model = None
         self.model_type = None
@@ -117,18 +117,31 @@ class SimpleSalemClassifier:
         # Choose model
         if model_type == "random_forest":
             self.model = RandomForestClassifier(
-                n_estimators=100,
+                n_estimators=200,  # Increased from 100
+                max_depth=15,      # Add depth control
+                min_samples_split=5,
+                min_samples_leaf=2,
                 random_state=42,
                 n_jobs=-1
             )
         elif model_type == "svm":
             self.model = SVC(
                 kernel='rbf',
+                C=10.0,           # Increased regularization
+                gamma='scale',
                 probability=True,
                 random_state=42
             )
+        elif model_type == "gradient_boosting":
+            from sklearn.ensemble import GradientBoostingClassifier
+            self.model = GradientBoostingClassifier(
+                n_estimators=150,
+                learning_rate=0.1,
+                max_depth=6,
+                random_state=42
+            )
         else:
-            raise ValueError(f"Unknown model type: {model_type}")
+            raise ValueError(f"Unknown model type: {model_type}. Available: random_forest, svm, gradient_boosting")
         
         self.model_type = model_type
         
@@ -220,8 +233,8 @@ def train_salem_classifier():
     print("🐱 Simple Salem Classifier Training")
     print("=" * 40)
     
-    # Initialize classifier
-    classifier = SimpleSalemClassifier(img_size=(64, 64))
+    # Initialize classifier with optimized settings
+    classifier = SimpleSalemClassifier(img_size=(128, 128))  # Larger images for better features
     
     # Load training data
     try:
@@ -230,8 +243,10 @@ def train_salem_classifier():
         print(f"❌ Error loading training data: {e}")
         return
     
-    # Train model
+    # Train model with optimized algorithm
     try:
+        # Use optimized Random Forest (best performing)
+        print("🚀 Training with Optimized Random Forest (200 estimators, 128x128 images)...")
         accuracy = classifier.train_model(X_train, y_train, model_type="random_forest")
     except Exception as e:
         print(f"❌ Error training model: {e}")

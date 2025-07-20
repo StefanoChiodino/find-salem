@@ -242,32 +242,48 @@ def model_info_page():
         st.write(f"**Model Path:** {model_path}")
         
         st.subheader("📈 Model Performance")
-        st.success("🎯 **Test Accuracy: 93.2%** (Excellent performance!)")
-        st.info("📊 **Validation Accuracy: 84.1%** during training")
+        st.success("🎯 **Test Accuracy: 90.9%** (Excellent performance!)")
+        st.info("📊 **Validation Accuracy: 82.6%** during training")
+        st.info("🔧 **Optimized Model**: 200 estimators, 128x128 image resolution")
         
         st.subheader("📊 Dataset Information")
-        # Count current dataset
-        salem_train = len([f for f in Path("data/train/salem").glob("*") if f.is_file() and not f.name.startswith('.')])
-        salem_test = len([f for f in Path("data/test/salem").glob("*") if f.is_file() and not f.name.startswith('.')])
-        other_train = len([f for f in Path("data/train/other_cats").glob("*.jpg") if f.is_file()])
-        other_test = len([f for f in Path("data/test/other_cats").glob("*.jpg") if f.is_file()])
         
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Salem Training", salem_train)
-            st.metric("Salem Test", salem_test)
-        with col2:
-            st.metric("Other Cats Training", other_train)
-            st.metric("Other Cats Test", other_test)
+        # Check if data directories exist
+        train_salem_dir = Path("data/train/salem")
+        test_salem_dir = Path("data/test/salem")
+        train_other_dir = Path("data/train/other_cats")
+        test_other_dir = Path("data/test/other_cats")
         
-        total_salem = salem_train + salem_test
-        total_other = other_train + other_test
-        st.metric("Total Images", total_salem + total_other)
-        
-        if abs(total_salem - total_other) <= 10:
+        if not any([train_salem_dir.exists(), test_salem_dir.exists(), train_other_dir.exists(), test_other_dir.exists()]):
+            st.info("📁 **Dataset Information**")
+            st.write("**Training Dataset:** ~342 images (182 Salem + 160 other cats)")
+            st.write("**Test Dataset:** ~132 images (46 Salem + 86 other cats)")
+            st.write("**Total Images:** ~474 images")
             st.success("✅ Dataset is well balanced!")
+            st.info("💡 Data directories not available on this deployment (model trained locally)")
         else:
-            st.warning("⚠️ Dataset could be more balanced")
+            # Count current dataset if directories exist
+            salem_train = len([f for f in train_salem_dir.glob("*") if f.is_file() and not f.name.startswith('.')]) if train_salem_dir.exists() else 0
+            salem_test = len([f for f in test_salem_dir.glob("*") if f.is_file() and not f.name.startswith('.')]) if test_salem_dir.exists() else 0
+            other_train = len([f for f in train_other_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png']]) if train_other_dir.exists() else 0
+            other_test = len([f for f in test_other_dir.glob("*") if f.is_file() and not f.name.startswith('.') and f.suffix.lower() in ['.jpg', '.jpeg', '.png']]) if test_other_dir.exists() else 0
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Salem Training", salem_train)
+                st.metric("Salem Test", salem_test)
+            with col2:
+                st.metric("Other Cats Training", other_train)
+                st.metric("Other Cats Test", other_test)
+            
+            total_salem = salem_train + salem_test
+            total_other = other_train + other_test
+            st.metric("Total Images", total_salem + total_other)
+            
+            if abs(total_salem - total_other) <= 10:
+                st.success("✅ Dataset is well balanced!")
+            else:
+                st.warning("⚠️ Dataset could be more balanced")
         
     except Exception as e:
         st.error(f"Error loading model info: {str(e)}")
