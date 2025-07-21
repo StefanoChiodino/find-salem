@@ -56,8 +56,26 @@ def predict_page():
     model_path = "models/simple_salem_classifier.pkl"
     fastai_model_path = "models/salem_fastai_model.pkl"
     
-    # Use FastAI model if available, otherwise fall back to simple classifier
+    # Debug info
+    st.sidebar.write("**Debug Info:**")
+    st.sidebar.write(f"FastAI model exists: {Path(fastai_model_path).exists()}")
+    st.sidebar.write(f"Simple model exists: {Path(model_path).exists()}")
+    
+    # Test FastAI loading capability
+    fastai_available = False
     if Path(fastai_model_path).exists():
+        try:
+            from fastai.vision.all import load_learner
+            # Test load the model
+            test_learner = load_learner(fastai_model_path)
+            fastai_available = True
+            st.sidebar.write("✅ FastAI model loads successfully")
+        except Exception as e:
+            st.sidebar.write(f"❌ FastAI model load error: {str(e)}")
+            fastai_available = False
+    
+    # Use FastAI model if available and loadable, otherwise fall back to simple classifier
+    if fastai_available:
         model_path = fastai_model_path
         model_type = "FastAI"
     elif Path(model_path).exists():
@@ -67,7 +85,9 @@ def predict_page():
         st.info("💡 Run `python3 simple_trainer.py` to train the model first.")
         return
     
-    st.info(f"🤖 Using {model_type} model: {Path(model_path).name}")
+    st.success(f"🤖 Using {model_type} model: {Path(model_path).name}")
+    if model_type == "FastAI":
+        st.info("⚡ High-performance FastAI model with 86.7% accuracy")
     
     # Tab selection
     tab1, tab2 = st.tabs(["📤 Upload Photos", "🧪 Test with Demo Samples"])
@@ -91,10 +111,12 @@ def predict_page():
                     # Use FastAI classifier
                     from fastai.vision.all import load_learner
                     classifier = load_learner(model_path)
+                    st.sidebar.write("✅ FastAI classifier loaded for predictions")
                 else:
                     # Use simple classifier
                     classifier = SimpleSalemClassifier()
                     classifier.load_model(model_path)
+                    st.sidebar.write("ℹ️ Simple classifier loaded for predictions")
                 
                 for idx, uploaded_file in enumerate(uploaded_files):
                     col_idx = idx % 3
@@ -167,9 +189,11 @@ def predict_page():
                 if model_type == "FastAI":
                     from fastai.vision.all import load_learner
                     classifier = load_learner(model_path)
+                    st.sidebar.write("✅ FastAI classifier loaded for test photos")
                 else:
                     classifier = SimpleSalemClassifier()
                     classifier.load_model(model_path)
+                    st.sidebar.write("ℹ️ Simple classifier loaded for test photos")
                 
                 # Display image
                 image = Image.open(photo_path)
