@@ -44,8 +44,16 @@ def predict_page():
     col1, col2 = st.columns(2)
     salem_test_dir = Path("data/test/salem")
     other_test_dir = Path("data/test/other_cats")
-    salem_photos = sorted(list(salem_test_dir.glob("*.jpg")))
-    other_photos = sorted(list(other_test_dir.glob("*.jpg")))
+    
+    # Get all image files with various extensions
+    salem_photos = sorted([
+        f for f in salem_test_dir.iterdir() 
+        if f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+    ])
+    other_photos = sorted([
+        f for f in other_test_dir.iterdir() 
+        if f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+    ])
 
     with col1:
         selected_salem_photos = st.multiselect("", salem_photos, format_func=lambda p: p.name, placeholder="Select Salem test photos")
