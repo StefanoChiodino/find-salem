@@ -19,23 +19,10 @@ def main():
         layout="wide"
     )
 
-    st.sidebar.title("🐈‍⬛ Find Salem")
-    st.sidebar.caption("Black Cat Identifier")
-    page = st.sidebar.radio("", [
-        "🔍 Predict",
-        "📚 Train Model",
-        "📊 Data Management",
-        "ℹ️ Model Info"
-    ])
-
-    if page == "🔍 Predict":
-        predict_page()
-    elif page == "📚 Train Model":
-        train_page()
-    elif page == "📊 Data Management":
-        data_management_page()
-    elif page == "ℹ️ Model Info":
-        model_info_page()
+    st.title("🐈‍⬛ Find Salem")
+    st.caption("Black Cat Identifier")
+    
+    predict_page()
 
 def predict_page():
     # Model loading
@@ -111,29 +98,10 @@ def predict_page():
     demo_photos_with_labels.extend([(photo, "Salem") for photo in selected_salem_photos])
     demo_photos_with_labels.extend([(photo, "Other Cat") for photo in selected_other_photos])
     
-    if demo_photos_with_labels:
-        display_grid(demo_photos_with_labels)
+    display_grid(demo_photos_with_labels)
     
     if not uploaded_files and not selected_salem_photos and not selected_other_photos:
         st.info("Please upload a photo or select a test image to see a prediction.")
-
-def train_page():
-    st.header("📚 Train Model")
-    st.info("This section is for retraining the model. The current model has 86.7% accuracy.")
-    if st.button("Retrain FastAI Model"):
-        with st.spinner("Training in progress..."):
-            # This would call the training script, e.g., via subprocess
-            st.success("Model training script would run here.")
-
-def data_management_page():
-    st.header("📊 Data Management")
-    st.info("Manage the training and test datasets here.")
-
-def model_info_page():
-    st.header("ℹ️ Model Information")
-    st.info("Details about the current model and dataset.")
-    st.metric("Model Accuracy", "86.7%")
-
 
 if __name__ == "__main__":
     main()
