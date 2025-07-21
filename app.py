@@ -54,60 +54,141 @@ def predict_page():
     
     # Check if model exists
     model_path = "models/simple_salem_classifier.pkl"
-    if not Path(model_path).exists():
+    fastai_model_path = "models/salem_fastai_model.pkl"
+    
+    # Use FastAI model if available, otherwise fall back to simple classifier
+    if Path(fastai_model_path).exists():
+        model_path = fastai_model_path
+        model_type = "FastAI"
+    elif Path(model_path).exists():
+        model_type = "Simple"
+    else:
         st.warning("⚠️ No trained model found. Please train a model first in the 'Train Model' tab.")
         st.info("💡 Run `python3 simple_trainer.py` to train the model first.")
         return
     
-    # File uploader
-    uploaded_files = st.file_uploader(
-        "Choose image files", 
-        type=['png', 'jpg', 'jpeg', 'heic'],
-        accept_multiple_files=True
-    )
+    st.info(f"🤖 Using {model_type} model: {Path(model_path).name}")
     
-    if uploaded_files:
-        # Create columns for displaying results
-        cols = st.columns(min(len(uploaded_files), 3))
+    # Tab selection
+    tab1, tab2 = st.tabs(["📤 Upload Photos", "🧪 Test with Demo Samples"])
+    
+    with tab1:
+        st.subheader("Upload Your Photos")
+        # File uploader
+        uploaded_files = st.file_uploader(
+            "Choose image files", 
+            type=['png', 'jpg', 'jpeg', 'heic'],
+            accept_multiple_files=True
+        )
         
-        try:
-            # Load the simple classifier
-            classifier = SimpleSalemClassifier()
-            classifier.load_model(model_path)
+        if uploaded_files:
+            # Create columns for displaying results
+            cols = st.columns(min(len(uploaded_files), 3))
             
-            for idx, uploaded_file in enumerate(uploaded_files):
-                col_idx = idx % 3
+            try:
+                # Load the classifier
+                if model_type == "FastAI":
+                    # Use FastAI classifier
+                    from fastai.vision.all import load_learner
+                    classifier = load_learner(model_path)
+                else:
+                    # Use simple classifier
+                    classifier = SimpleSalemClassifier()
+                    classifier.load_model(model_path)
                 
-                with cols[col_idx]:
-                    # Display image
-                    image = Image.open(uploaded_file)
-                    st.image(image, caption=uploaded_file.name, use_column_width=True)
+                for idx, uploaded_file in enumerate(uploaded_files):
+                    col_idx = idx % 3
                     
-                    # Save temp file for prediction
-                    temp_path = f"temp_{uploaded_file.name}"
-                    image.save(temp_path)
-                    
-                    try:
-                        # Make prediction
-                        pred, confidence = classifier.predict(temp_path)
+                    with cols[col_idx]:
+                        # Display image
+                        image = Image.open(uploaded_file)
+                        st.image(image, caption=uploaded_file.name, use_column_width=True)
                         
-                        # Display results
-                        if pred.lower() == "salem":
-                            st.success(f"🎯 **Salem detected!**")
-                            st.metric("Confidence", f"{confidence:.1%}")
-                        else:
-                            st.info(f"😺 **Other cat detected**")
-                            st.metric("Confidence", f"{confidence:.1%}")
+                        # Save temp file for prediction
+                        temp_path = f"temp_{uploaded_file.name}"
+                        image.save(temp_path)
+                        
+                        try:
+                            # Make prediction
+                            if model_type == "FastAI":
+                                pred_class, pred_idx, probs = classifier.predict(temp_path)
+                                pred = str(pred_class)
+                                confidence = float(probs[pred_idx])
+                            else:
+                                pred, confidence = classifier.predict(temp_path)
                             
-                    except Exception as e:
-                        st.error(f"Error predicting: {str(e)}")
-                    finally:
-                        # Clean up temp file
-                        if os.path.exists(temp_path):
-                            os.remove(temp_path)
-                            
-        except Exception as e:
-            st.error(f"Error loading model: {str(e)}")
+                            # Compact display: prediction and confidence in one line
+                            if pred.lower() == "salem":
+                                st.success(f"🎯 **Prediction: Salem** | Confidence: {confidence:.1%}")
+                            else:
+                                st.info(f"😺 **Prediction: Other Cat** | Confidence: {confidence:.1%}")
+                                
+                        except Exception as e:
+                            st.error(f"Error predicting: {str(e)}")
+                        finally:
+                            # Clean up temp file
+                            if os.path.exists(temp_path):
+                                os.remove(temp_path)
+                                
+            except Exception as e:
+                st.error(f"Error loading model: {str(e)}")
+    
+    with tab2:
+        st.subheader("Test with Demo Samples")
+        
+        # Get demo sample photos
+        demo_salem_dir = Path("demo_samples/salem")
+        demo_other_dir = Path("demo_samples/other_cats")
+        
+        demo_photos = []
+        if demo_salem_dir.exists():
+            for img_path in demo_salem_dir.glob("*.jpg"):
+                demo_photos.append((str(img_path), "Salem"))
+        if demo_other_dir.exists():
+            for img_path in demo_other_dir.glob("*.jpg"):
+                demo_photos.append((str(img_path), "Other Cat"))
+        
+        if not demo_photos:
+            st.warning("⚠️ No demo sample photos found in demo_samples/ folder.")
+            return
+        
+        # Photo selection
+        photo_names = [f"{Path(path).name} (True: {true_label})" for path, true_label in demo_photos]
+        selected_photo = st.selectbox("Choose a test photo:", photo_names)
+        
+        if selected_photo:
+            # Find selected photo path and true label
+            selected_idx = photo_names.index(selected_photo)
+            photo_path, true_label = demo_photos[selected_idx]
+            
+            # Display photo and make prediction
+            try:
+                # Load classifier
+                if model_type == "FastAI":
+                    from fastai.vision.all import load_learner
+                    classifier = load_learner(model_path)
+                else:
+                    classifier = SimpleSalemClassifier()
+                    classifier.load_model(model_path)
+                
+                # Display image
+                image = Image.open(photo_path)
+                st.image(image, caption=Path(photo_path).name, width=400)
+                
+                # Make prediction
+                if model_type == "FastAI":
+                    pred_class, pred_idx, probs = classifier.predict(photo_path)
+                    pred = str(pred_class)
+                    confidence = float(probs[pred_idx])
+                else:
+                    pred, confidence = classifier.predict(photo_path)
+                
+                # Compact display: true label, prediction, and confidence in single line
+                correct = "✅" if pred.lower() == true_label.lower() else "❌"
+                st.markdown(f"**{correct} True: {true_label} | Prediction: {pred} | Confidence: {confidence:.1%}**")
+                
+            except Exception as e:
+                st.error(f"Error making prediction: {str(e)}")
 
 
 def train_page():
