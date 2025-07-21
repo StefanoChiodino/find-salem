@@ -21,7 +21,7 @@ def main():
 
     st.title("🐈‍⬛ Find Salem")
     st.caption("Black Cat Identifier")
-    
+
     predict_page()
 
 def predict_page():
@@ -44,15 +44,15 @@ def predict_page():
     col1, col2 = st.columns(2)
     salem_test_dir = Path("data/test/salem")
     other_test_dir = Path("data/test/other_cats")
-    
+
     # Get all image files with various extensions
     salem_photos = sorted([
-        f for f in salem_test_dir.iterdir() 
-        if f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+        f for f in salem_test_dir.iterdir()
+        if f.suffix.lower() in ['.jpg', '.jpeg', '.png']
     ])
     other_photos = sorted([
-        f for f in other_test_dir.iterdir() 
-        if f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+        f for f in other_test_dir.iterdir()
+        if f.suffix.lower() in ['.jpg', '.jpeg', '.png']
     ])
 
     with col1:
@@ -70,15 +70,15 @@ def predict_page():
 
         # Define the number of columns for the grid
         num_cols = 4
-        
+
         # Iterate through photos in chunks of size `num_cols` to create rows
         for i in range(0, num_photos, num_cols):
             # Create a new row of columns for each chunk
             cols = st.columns(num_cols)
-            
+
             # Get the chunk of photos for the current row
             row_items = photos_with_labels[i:i + num_cols]
-            
+
             # Iterate through the photos and columns for the current row
             for j, (photo, true_label) in enumerate(row_items):
                 with cols[j]:
@@ -100,14 +100,14 @@ def predict_page():
         # For uploaded files, create list of (photo, None) tuples since we don't know true labels
         photos_with_labels = [(photo, None) for photo in uploaded_files]
         display_grid(photos_with_labels)
-    
+
     # Combine demo photos from both dropdowns into a single list with their labels
     demo_photos_with_labels = []
     demo_photos_with_labels.extend([(photo, "Salem") for photo in selected_salem_photos])
     demo_photos_with_labels.extend([(photo, "Other Cat") for photo in selected_other_photos])
-    
+
     display_grid(demo_photos_with_labels)
-    
+
     if not uploaded_files and not selected_salem_photos and not selected_other_photos:
         st.info("Please upload a photo or select a test image to see a prediction.")
 
