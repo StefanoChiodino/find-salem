@@ -117,11 +117,11 @@ def predict_page():
                             else:
                                 pred, confidence = classifier.predict(temp_path)
                             
-                            # Compact display: prediction and confidence in one line
+                            # Ultra-compact display: prediction and confidence only
                             if pred.lower() == "salem":
-                                st.success(f"🎯 **Prediction: Salem** | Confidence: {confidence:.1%}")
+                                st.success(f"**Salem** | {confidence:.1%}")
                             else:
-                                st.info(f"😺 **Prediction: Other Cat** | Confidence: {confidence:.1%}")
+                                st.info(f"**Other Cat** | {confidence:.1%}")
                                 
                         except Exception as e:
                             st.error(f"Error predicting: {str(e)}")
@@ -183,9 +183,14 @@ def predict_page():
                 else:
                     pred, confidence = classifier.predict(photo_path)
                 
-                # Compact display: true label, prediction, and confidence in single line
-                correct = "✅" if pred.lower() == true_label.lower() else "❌"
-                st.markdown(f"**{correct} True: {true_label} | Prediction: {pred} | Confidence: {confidence:.1%}**")
+                # Ultra-compact display: color + true/predicted + confidence
+                correct = pred.lower() == true_label.lower()
+                display_text = f"**{true_label}/{pred} | {confidence:.1%}**"
+                
+                if correct:
+                    st.success(display_text)
+                else:
+                    st.error(display_text)
                 
             except Exception as e:
                 st.error(f"Error making prediction: {str(e)}")
