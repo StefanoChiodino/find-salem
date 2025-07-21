@@ -4,7 +4,7 @@ A computer vision project using FastAI to identify a specific black cat (Salem) 
 
 ## Project Overview
 
-This project aims to create a machine learning model that can distinguish Salem from other black cats using computer vision techniques. The model will be trained locally using FastAI and PyTorch.
+This project uses transfer learning with FastAI and ResNet34 to distinguish Salem (a specific black cat) from other black cats. It achieves 86.7% validation accuracy on a perfectly balanced dataset of 456 cat photos.
 
 ## Setup
 
@@ -23,22 +23,45 @@ This project aims to create a machine learning model that can distinguish Salem 
 
 ```
 find-salem/
+├── src/
+│   ├── app.py                # Main Streamlit web application
+│   ├── collectors/           # Data collection modules
+│   ├── trainers/             # Model training scripts
+│   └── utils/                # Utility scripts
 ├── data/
 │   ├── train/
-│   │   ├── salem/
-│   │   └── other_cats/
 │   └── test/
-│       ├── salem/
-│       └── other_cats/
-├── src/
-│   ├── data_utils.py
-│   ├── model.py
-│   └── inference.py
-├── notebooks/
 ├── models/
+│   └── salem_fastai_model.pkl
+├── demo_samples/
 └── requirements.txt
 ```
 
 ## Usage
 
-Training and inference instructions will be added as the project develops.
+### Running the Web App
+
+```bash
+streamlit run src/app.py
+```
+
+### Running Scripts
+
+To run any of the helper scripts (e.g., for training or data collection), use the `python -m` command. This ensures the imports work correctly from the root directory.
+
+#### Example: Retraining the FastAI model
+
+```bash
+python -m src.trainers.fastai_trainer
+```
+
+#### Example: Collecting more cat photos
+
+```bash
+python -m src.collectors.fastai_collector
+```
+
+## Performance
+
+- **FastAI model**: 86.7% validation accuracy
+- Dataset: 456 photos (228 Salem, 228 other black cats)
